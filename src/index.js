@@ -6,7 +6,7 @@ const verifyWebhook = require('./verify-webhook');
 const messageWebhook = require('./message-webhook');
 
 const app = express();
-app.set('views', __dirname + '\\views');
+app.set('views', __dirname + '/views');
 app.engine('html', require('ejs').renderFile);
 const PORT = process.env.PORT || 3000;
 app.use(bodyParser.json());

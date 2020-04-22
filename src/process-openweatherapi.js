@@ -1,5 +1,6 @@
 const fetch = require('node-fetch');
 const moment = require('moment');
+const emoji = require('node-emoji');
 const weatherDictionary = require('../dictionaries/WEATHER_DICTIONARY');
 
 const getWeatherFromCity = async cityId => {
@@ -23,8 +24,9 @@ module.exports = async (event) => {
             if (weatherResponse) {
                 let weatherResult = weatherDictionary(weatherResponse.weather[0].id);
                 let weatherTemp = temperatureConverter(weatherResponse.main.temp);
-                message = `Nhiệt độ hiện tại ở ${weatherResponse.name} là : ${weatherTemp}°C`
-                message += `\nKiểu thời tiết: ${weatherResult.main} ; Mô tả: ${weatherResult.description}`;
+                message = `Nhiệt độ hiện tại ở ${weatherResponse.name} là : ${weatherTemp}°C`;
+                let weatherEmoji = emoji.find(weatherResult.icon);
+                message += `\nKiểu thời tiết: ${weatherEmoji.emoji} ${weatherResult.main} ; Mô tả: ${weatherResult.description}`;
                 return message;
             }
         }
@@ -60,7 +62,8 @@ module.exports = async (event) => {
                 message += `\n - Ngày ${key}`;
                 message += `\nNhiệt độ cao nhất ${weatherResultList[key].tempMax}°C | Nhiệt độ thấp nhất ${weatherResultList[key].tempMin}°C`;
                 let weatherResult = weatherDictionary(weatherResultList[key].id);
-                message += `\nKiểu thời tiết: ${weatherResult.main} ; Mô tả: ${weatherResult.description}`;
+                let weatherEmoji = emoji.find(weatherResult.icon);
+                message += `\nKiểu thời tiết: ${weatherEmoji.emoji} ${weatherResult.main} ; Mô tả: ${weatherResult.description}`;
             });
             return message;
         }

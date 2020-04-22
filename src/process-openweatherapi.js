@@ -58,6 +58,8 @@ module.exports = async (event) => {
                     }
                 }
             }
+            let currentDate = moment().format('DD-MM-YYYY');
+            delete weatherResultList[currentDate];
             Object.keys(weatherResultList).forEach(key => {
                 message += `\n - Ngày ${key}`;
                 message += `\nNhiệt độ cao nhất ${weatherResultList[key].tempMax}°C | Nhiệt độ thấp nhất ${weatherResultList[key].tempMin}°C`;

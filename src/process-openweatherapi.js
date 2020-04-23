@@ -24,17 +24,17 @@ module.exports = async (event) => {
             if (weatherResponse) {
                 let weatherResult = weatherDictionary(weatherResponse.weather[0].id);
                 let weatherTemp = temperatureConverter(weatherResponse.main.temp);
-                message = `Nhiệt độ hiện tại ở ${weatherResponse.name} là : ${weatherTemp}°C`;
+                message = `${emoji.find('thermometer').emoji} Nhiệt độ hiện tại ở ${weatherResponse.name} là : ${weatherTemp}°C`;
                 let weatherEmoji = emoji.find(weatherResult.icon);
                 message += `\nKiểu thời tiết: ${weatherEmoji.emoji} ${weatherResult.main} ; Mô tả: ${weatherResult.description}`;
                 return message;
             }
         }
-        if (event.type === "forecast") {
+        if (event.type === "forecast_5day") {
             const weatherResponse = await getForeCastFromCity(cityId);
             const weatherList = weatherResponse.list;
             let weatherResultList = {};
-            message = "";
+            message = `${emoji.find('star').emoji} Dự đoán thời tiết của 5 ngày sắp tới ${emoji.find('star').emoji}`;
             for (let i = 0; i < weatherList.length; i++) {
                 let dt = moment(weatherList[i].dt_txt, "YYYY-MM-DD HH:mm:ss");
                 let dtKey = moment(dt).format('DD-MM-YYYY');
@@ -61,8 +61,34 @@ module.exports = async (event) => {
             let currentDate = moment().format('DD-MM-YYYY');
             delete weatherResultList[currentDate];
             Object.keys(weatherResultList).forEach(key => {
-                message += `\n - Ngày ${key}`;
-                message += `\nNhiệt độ cao nhất ${weatherResultList[key].tempMax}°C | Nhiệt độ thấp nhất ${weatherResultList[key].tempMin}°C`;
+                message += `\n ${emoji.find('clock3').emoji} Ngày ${key}`;
+                message += `\n${emoji.find('thermometer').emoji} Nhiệt độ cao nhất ${weatherResultList[key].tempMax}°C | Nhiệt độ thấp nhất ${weatherResultList[key].tempMin}°C`;
+                let weatherResult = weatherDictionary(weatherResultList[key].id);
+                let weatherEmoji = emoji.find(weatherResult.icon);
+                message += `\nKiểu thời tiết: ${weatherEmoji.emoji} ${weatherResult.main} ; Mô tả: ${weatherResult.description}`;
+            });
+            return message;
+        }
+        if (event.type === "forecast_today") {
+            const weatherResponse = await getForeCastFromCity(cityId);
+            const weatherList = weatherResponse.list;
+            let weatherResultList = {};
+            message = `${emoji.find('star').emoji} Dự đoán thời tiết của ngày hôm nay ${emoji.find('star').emoji}`;
+            let currentDate = moment().format('DD-MM-YYYY');
+            for (let i = 0; i < weatherList.length; i++) {
+                let dt = moment(weatherList[i].dt_txt, "YYYY-MM-DD HH:mm:ss");
+                let dtKey = moment(dt).format('DD-MM-YYYY HH:mm:ss');
+                if (dtKey.includes(currentDate) && dt.isSameOrAfter(moment())) {
+                    weatherResultList[dtKey] = {
+                        tempMax: temperatureConverter(weatherList[i].main.temp_max),
+                        tempMin: temperatureConverter(weatherList[i].main.temp_min),
+                        id: weatherList[i].weather[0].id
+                    };
+                }
+            }
+            Object.keys(weatherResultList).forEach(key => {
+                message += `\n ${emoji.find('clock3').emoji} Thời gian ${key}`;
+                message += `\n${emoji.find('thermometer').emoji} Nhiệt độ cao nhất ${weatherResultList[key].tempMax}°C | Nhiệt độ thấp nhất ${weatherResultList[key].tempMin}°C`;
                 let weatherResult = weatherDictionary(weatherResultList[key].id);
                 let weatherEmoji = emoji.find(weatherResult.icon);
                 message += `\nKiểu thời tiết: ${weatherEmoji.emoji} ${weatherResult.main} ; Mô tả: ${weatherResult.description}`;

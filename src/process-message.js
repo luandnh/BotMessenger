@@ -1,14 +1,18 @@
 const fetch = require('node-fetch');
 const processOpenWeatherAPI = require('./process-openweatherapi');
 const processFaceBookUser = require('./process-facebook-user');
+const emoji = require('node-emoji');
 const WEATHER_DICTIONARY = [
-    "nhiet do", "nhiet do hom nay", "nhiet do hien tai", "nhiet do bay gio"
+    "!weather", "!today", "nhiet do", "nhiet do hom nay", "nhiet do hien tai", "nhiet do bay gio"
 ];
-const FORECAST_DICTIONARY = [
-    "du doan", "du bao", "du doan nhiet do", "du doan thoi tiet", "du bao nhiet do", "du bao thoi tiet"
+const FORECAST_TODAY_DICTIONARY = [
+    "!forecast", "!forecasttoday", "du doan", "du bao", "du doan nhiet do", "du doan thoi tiet", "du bao nhiet do", "du bao thoi tiet"
 ];
 const HELLO_DICTIONARY = [
-    "hi", "hello", "2", "xin chao", "chao", "chao ban", "help"
+    "hi", "hello", "2", "xin chao", "chao", "chao ban"
+];
+const HELP_DICTIONARY = [
+    "help", "!help", "!command"
 ];
 const sendTextMessage = (userId, text) => {
     var messageData = {
@@ -43,15 +47,28 @@ module.exports = async (event) => {
         const responseMessage = await processOpenWeatherAPI(requestModel);
         return sendTextMessage(userId, responseMessage);
     }
-    if (FORECAST_DICTIONARY.includes(message)) {
-        requestModel.type = "forecast";
+    if (message === "!forecast5day") {
+        requestModel.type = "forecast_5day";
+        const responseMessage = await processOpenWeatherAPI(requestModel);
+        return sendTextMessage(userId, responseMessage);
+    }
+    if (FORECAST_TODAY_DICTIONARY.includes(message)) {
+        requestModel.type = "forecast_today";
         const responseMessage = await processOpenWeatherAPI(requestModel);
         return sendTextMessage(userId, responseMessage);
     }
     if (HELLO_DICTIONARY.includes(message)) {
         const fullName = await processFaceBookUser(userId);
         let responseMessage = `Chào ${fullName}! Hiện tại mình đang phát triển bot báo cáo thời tiết.`;
-        responseMessage +='\nBạn cần mình giúp gì?';
+        responseMessage += '\nBạn cần mình giúp gì?';
+        return sendTextMessage(userId, responseMessage);
+    }
+    if (HELP_DICTIONARY.includes(message)) {
+        let responseMessage = `${emoji.find('star').emoji} Đây là danh sách các lệnh để sử dụng ${emoji.find('star').emoji}`;
+        responseMessage += `\n${emoji.find('triangular_flag_on_post').emoji} !command !help : Danh sách các lệnh.`;
+        responseMessage += `\n${emoji.find('triangular_flag_on_post').emoji} !today !weather : Nhiệt độ và thời tiết ngày hôm nay.`;
+        responseMessage += `\n${emoji.find('triangular_flag_on_post').emoji} !forecast !forecasttoday : Dự đoán nhiệt độ và thời tiết ngày hôm nay.`;
+        responseMessage += `\n${emoji.find('triangular_flag_on_post').emoji} !forecast5day : Dự đoán nhiệt độ và thời tiết 5 ngày tiếp theo.`;
         return sendTextMessage(userId, responseMessage);
     }
     return sendTextMessage(userId, "Bạn vui lòng thử lại!");

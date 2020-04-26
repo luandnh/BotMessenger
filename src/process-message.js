@@ -57,6 +57,11 @@ module.exports = async (event) => {
         const responseMessage = await processOpenWeatherAPI(requestModel);
         return sendTextMessage(userId, responseMessage);
     }
+    if ((/!forecast (0?[1-9]|[12][0-9]|3[01])[\-](0?[1-9]|1[012])[\-]\d{4}$/g).test(message)) {
+        requestModel.type = "forecast_date";
+        const responseMessage = await processOpenWeatherAPI(requestModel);
+        return sendTextMessage(userId, responseMessage);
+    }
     if (HELLO_DICTIONARY.includes(message)) {
         const fullName = await processFaceBookUser(userId);
         let responseMessage = `Chào ${fullName}! Hiện tại mình đang phát triển bot báo cáo thời tiết.`;

@@ -95,6 +95,38 @@ module.exports = async (event) => {
             });
             return message;
         }
+        if (event.type === "forecast_date") {
+            const messageProgress = event.message.split(" ");
+            const forecastDate = messageProgress[1];
+            const forecastDateMoment = moment(forecastDate, "DD-MM-YYYY");
+            const checkAfterDate = moment().add('days',5);
+            if(forecastDateMoment.isAfter(checkAfterDate) || forecastDateMoment.isBefore(moment())){
+                return "Mình chỉ dự báo thời gian trong 5 ngày sắp tới! Xin lỗi bạn!";
+            }
+            const weatherResponse = await getForeCastFromCity(cityId);
+            const weatherList = weatherResponse.list;
+            let weatherResultList = {};
+            message = `${emoji.find('star').emoji} Dự đoán thời tiết của ngày ${forecastDate} ${emoji.find('star').emoji}`;
+            for (let i = 0; i < weatherList.length; i++) {
+                let dt = moment(weatherList[i].dt_txt, "YYYY-MM-DD HH:mm:ss");
+                let dtKey = moment(dt).format('DD-MM-YYYY HH:mm:ss');
+                if (dtKey.includes(forecastDate)) {
+                    weatherResultList[dtKey] = {
+                        tempMax: temperatureConverter(weatherList[i].main.temp_max),
+                        tempMin: temperatureConverter(weatherList[i].main.temp_min),
+                        id: weatherList[i].weather[0].id
+                    };
+                }
+            }
+            Object.keys(weatherResultList).forEach(key => {
+                message += `\n ${emoji.find('clock3').emoji} Thời gian ${key}`;
+                message += `\n${emoji.find('thermometer').emoji} Nhiệt độ cao nhất ${weatherResultList[key].tempMax}°C | Nhiệt độ thấp nhất ${weatherResultList[key].tempMin}°C`;
+                let weatherResult = weatherDictionary(weatherResultList[key].id);
+                let weatherEmoji = emoji.find(weatherResult.icon);
+                message += `\nKiểu thời tiết: ${weatherEmoji.emoji} ${weatherResult.main} ; Mô tả: ${weatherResult.description}`;
+            });
+            return message;
+        }
     } catch (err) {
         console.log(err);
     }

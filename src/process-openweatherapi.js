@@ -106,21 +106,31 @@ module.exports = async (event) => {
             const weatherResponse = await getForeCastFromCity(cityId);
             const weatherList = weatherResponse.list;
             let weatherResultList = {};
+            let tempMax = 0;
+            let tempMin = 100;
             message = `${emoji.find('star').emoji} Dự đoán thời tiết của ngày ${forecastDate} ${emoji.find('star').emoji}`;
             for (let i = 0; i < weatherList.length; i++) {
                 let dt = moment(weatherList[i].dt_txt, "YYYY-MM-DD HH:mm:ss");
                 let dtKey = moment(dt).format('DD-MM-YYYY HH:mm:ss');
                 if (dtKey.includes(forecastDate)) {
                     weatherResultList[dtKey] = {
-                        tempMax: temperatureConverter(weatherList[i].main.temp_max),
-                        tempMin: temperatureConverter(weatherList[i].main.temp_min),
+                        temp: temperatureConverter(weatherList[i].main.temp),
                         id: weatherList[i].weather[0].id
                     };
+                    let tempCheckMax = temperatureConverter(weatherList[i].main.temp_max);
+                    let tempCheckMin = temperatureConverter(weatherList[i].main.temp_min);
+                    if (tempCheckMax > weatherResultList[dtKey].tempMax) {
+                        tempMax = tempCheckMax;
+                    }
+                    if (tempCheckMin < weatherResultList[dtKey].tempMin) {
+                        tempMin = tempCheckMin;
+                    }
                 }
             }
+            message += `\n${emoji.find('thermometer').emoji} Nhiệt độ cao nhất ${tempMax}°C | Nhiệt độ thấp nhất ${tempMin}°C`;
             Object.keys(weatherResultList).forEach(key => {
                 message += `\n ${emoji.find('clock3').emoji} Thời gian ${key}`;
-                message += `\n${emoji.find('thermometer').emoji} Nhiệt độ cao nhất ${weatherResultList[key].tempMax}°C | Nhiệt độ thấp nhất ${weatherResultList[key].tempMin}°C`;
+                message += `\n${emoji.find('thermometer').emoji} Nhiệt độ ${weatherResultList[key].temp}°C`;
                 let weatherResult = weatherDictionary(weatherResultList[key].id);
                 let weatherEmoji = emoji.find(weatherResult.icon);
                 message += `\nKiểu thời tiết: ${weatherEmoji.emoji} ${weatherResult.main} ; Mô tả: ${weatherResult.description}`;

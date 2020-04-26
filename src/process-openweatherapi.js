@@ -119,10 +119,10 @@ module.exports = async (event) => {
                     };
                     let tempCheckMax = temperatureConverter(weatherList[i].main.temp_max);
                     let tempCheckMin = temperatureConverter(weatherList[i].main.temp_min);
-                    if (tempCheckMax > weatherResultList[dtKey].tempMax) {
+                    if (tempCheckMax > tempMax) {
                         tempMax = tempCheckMax;
                     }
-                    if (tempCheckMin < weatherResultList[dtKey].tempMin) {
+                    if (tempCheckMin < tempMin) {
                         tempMin = tempCheckMin;
                     }
                 }

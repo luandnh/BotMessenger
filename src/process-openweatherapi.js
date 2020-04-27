@@ -100,7 +100,7 @@ module.exports = async (event) => {
             const forecastDate = messageProgress[1];
             const forecastDateMoment = moment(forecastDate, "DD-MM-YYYY");
             const checkAfterDate = moment().add('days',5);
-            if(forecastDateMoment.isAfter(checkAfterDate) || forecastDateMoment.isBefore(moment())){
+            if(forecastDateMoment.isAfter(checkAfterDate) || forecastDateMoment.isBefore(moment().subtract('days',1))){
                 return "Mình chỉ dự báo thời gian trong 5 ngày sắp tới! Xin lỗi bạn!";
             }
             const weatherResponse = await getForeCastFromCity(cityId);
